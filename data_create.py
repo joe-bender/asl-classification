@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import cv2
-import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
 
 # number of sample images to take from each category
 NUM_SAMPLES = 3
@@ -11,10 +11,14 @@ data_dir = os.path.join('asl-alphabet', 'asl_alphabet_train', 'asl_alphabet_trai
 Xs_list = []
 ys_list = []
 
+# category names are the names of the directories
 categories = os.listdir(data_dir)
+
 # create category-to-integer index
 cat2idx = {cat: idx for idx, cat in enumerate(categories)}
 
+# load images and labels into lists
+# (one list for image inputs and one list for category labels)
 for category in categories:
     cat_dir = os.path.join(data_dir, category)
     image_files = os.listdir(cat_dir)
@@ -27,13 +31,26 @@ for category in categories:
         Xs_list.append([gray])
         ys_list.append(y_idx)
 
+# turn lists into numpy arrays
 Xs = np.vstack(Xs_list)
 ys = np.vstack(ys_list)
 
+# split intro train and test sets
+test_size = .1
+Xs_train, Xs_test, ys_train, ys_test = train_test_split(Xs, ys, test_size=test_size)
+
 # save dataset to file
 np_dir = 'numpy_data'
+train_dir = 'train'
+test_dir = 'test'
+
+# create data directories
 os.mkdir(np_dir)
-Xs_path = os.path.join(np_dir, 'Xs')
-np.save(Xs_path, Xs)
-ys_path = os.path.join(np_dir, 'ys')
-np.save(ys_path, ys)
+os.mkdir(os.path.join(np_dir, train_dir))
+os.mkdir(os.path.join(np_dir, test_dir))
+
+# save datasets
+np.save(os.path.join(np_dir, train_dir, 'Xs'), Xs_train)
+np.save(os.path.join(np_dir, test_dir, 'Xs'), Xs_test)
+np.save(os.path.join(np_dir, train_dir, 'ys'), ys_train)
+np.save(os.path.join(np_dir, test_dir, 'ys'), ys_test)
